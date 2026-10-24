@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SchoolBus ET - የወላጆች እና አሽከርካሪዎች ፖርታል</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome & Ionicons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Font (Noto Sans Ethiopic / Inter) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Ethiopic:wght@300;400;600;700;800&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Noto Sans Ethiopic"', '"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            900: '#0c4a6e',
+                        },
+                        ethiopia: {
+                            green: '#10b981',
+                            yellow: '#f59e0b',
+                            red: '#ef4444',
+                            telebirr: '#0084ff',
+                            cbe: '#8b1538',
+                            awash: '#1a365d'
+                        }
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        },
+                        glow: {
+                            '0%': { boxShadow: '0 0 5px rgba(14, 165, 233, 0.4)' },
+                            '100%': { boxShadow: '0 0 20px rgba(14, 165, 233, 0.8)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Modern Dynamic CSS & Animations */
+        body {
+            background-color: #0b0f19;
+            color: #f3f4f6;
+            overflow-x: hidden;
+            user-select: none;
+        }
+
+        /* Ambient Glassmorphism */
+        .glass-card {
+            background: rgba(17, 24, 39, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .glass-nav {
+            background: rgba(11, 15, 25, 0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Futuristic Background Canvas Grid */
+        #bgCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* Route Line Animation */
+        .route-dash {
+            stroke-dasharray: 8;
+            animation: dash 20s linear infinite;
+        }
+
+        @keyframes dash {
+            to {
+                stroke-dashoffset: -1000;
+            }
+        }
+
+        /* Scrollbar Style */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0b0f19;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #0ea5e9;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans justify-between antialiased">
+
+    <!-- Interactive Glowing Background Canvas -->
+    <canvas id="bgCanvas"></canvas>
+
+    <!-- Top Universal Navigation Shell -->
+    <header class="sticky top-0 z-50 glass-nav px-4 py-3">
+        <div class="max-w-6xl mx-auto flex items-center justify-between">
+            <!-- Brand Logo -->
+            <div class="flex items-center space-x-3 space-x-reverse cursor-pointer" onclick="switchPortal('hub')">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-sky-500/30">
+                    <i class="fa-solid fa-bus text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="font-extrabold text-lg text-white tracking-tight flex items-center gap-2">
+                        SchoolBus <span class="bg-gradient-to-r from-sky-400 to-indigo-400 bg-clip-text text-transparent">ET</span>
+                    </h1>
+                    <p class="text-[10px] text-slate-400 font-medium">የተማሪዎች ዲጂታል ደህንነት ፖርታል</p>
+                </div>
+            </div>
+
+            <!-- Portal Switcher Buttons -->
+            <div class="flex items-center bg-slate-900/80 p-1 rounded-2xl border border-slate-800">
+                <button id="btnParentPortal" onclick="requestPortalAccess('parent')" class="px-3 md:px-5 py-2 rounded-xl text-xs md:text-sm font-bold transition-all flex items-center gap-2 text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-user-shield text-sky-400"></i>
+                    <span>የወላጅ መተግበሪያ</span>
+                </button>
+                <button id="btnDriverPortal" onclick="requestPortalAccess('driver')" class="px-3 md:px-5 py-2 rounded-xl text-xs md:text-sm font-bold transition-all flex items-center gap-2 text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-id-card-clip text-emerald-400"></i>
+                    <span>የአሽከርካሪ መተግበሪያ</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN APP CONTAINER -->
+    <main class="flex-grow max-w-6xl w-full mx-auto p-3 md:p-6 z-10">
+
+        <!-- ========================================== -->
+        <!-- HUB VIEW / LANDING DASHBOARD CHOICE        -->
+        <!-- ========================================== -->
+        <div id="portalHub" class="py-10 text-center animate-fade-in">
+            <div class="inline-block p-3 rounded-full bg-sky-500/10 border border-sky-500/20 mb-4 animate-bounce">
+                <span class="text-sky-400 text-xs font-semibold px-3 py-1 rounded-full bg-sky-500/20">
+                    ✨ አፕሊኬሽን ማውረድ ሳይፈልጉ በቀጥታ በዌብሳይት ይጠቀሙ
+                </span>
+            </div>
+            <h2 class="text-3xl md:text-5xl font-black text-white mb-4 leading-tight">
+                እንኳን ወደ <span class="bg-gradient-to-r from-sky-400 via-indigo-400 to-emerald-400 bg-clip-text text-transparent">SchoolBus ET</span> በሰላም መጡ
+            </h2>
+            <p class="text-slate-400 max-w-xl mx-auto text-sm md:text-base mb-10">
+                የልጅዎን ትምህርት ቤት ጉዞ በቀጥታ የካርታ ክትትል (GPS)፣ ዲጂታል ክፍያዎችን እና የክትትል ሁኔታ በቅጽበት ይከታተሉ።
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+                <!-- Choice 1: Parent Portal -->
+                <div onclick="requestPortalAccess('parent')" class="glass-card p-8 rounded-3xl cursor-pointer hover:border-sky-500/50 hover:scale-[1.02] transition-all group text-right">
+                    <div class="w-16 h-16 rounded-2xl bg-sky-500/20 text-sky-400 flex items-center justify-center text-2xl mb-6 group-hover:bg-sky-500 group-hover:text-white transition-all shadow-lg shadow-sky-500/20">
+                        <i class="fa-solid fa-person-breastfeeding"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-2">የወላጆች ፖርታል (Parent App)</h3>
+                    <p class="text-slate-400 text-xs leading-relaxed mb-6">
+                        የልጅዎን የጂፒኤስ ቦታ፣ የደረሰበትን ሰዓት፣ የአሽከርካሪ መታወቂያ እና በቴሌብር፣ በCBE Birr እና በሌሎች ባንኮች ክፍያ ይፈጽሙ።
+                    </p>
+                    <div class="inline-flex items-center text-sky-400 text-xs font-bold gap-2">
+                        <span>ወደ ወላጆች ገጽ ግባ</span>
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </div>
+                </div>
+
+                <!-- Choice 2: Driver Portal -->
+                <div onclick="requestPortalAccess('driver')" class="glass-card p-8 rounded-3xl cursor-pointer hover:border-emerald-500/50 hover:scale-[1.02] transition-all group text-right">
+                    <div class="w-16 h-16 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-2xl mb-6 group-hover:bg-emerald-500 group-hover:text-white transition-all shadow-lg shadow-emerald-500/20">
+                        <i class="fa-solid fa-bus-simple"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-2">የአሽከርካሪ ፖርታል (Driver App)</h3>
+                    <p class="text-slate-400 text-xs leading-relaxed mb-6">
+                        የተማሪዎችን ዝርዝር፣ የቤት አድራሻ፣ ጉዞ የመጀመርያና የማጠቃለያ ቁልፍ፣ እና የአደጋ ጊዜ ጥሪ (Emergency SOS) ይጠቀሙ።
+                    </p>
+                    <div class="inline-flex items-center text-emerald-400 text-xs font-bold gap-2">
+                        <span>ወደ አሽከርካሪዎች ገጽ ግባ</span>
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- SECURITY PIN AUTHENTICATION OVERLAY        -->
+        <!-- ========================================== -->
+        <div id="pinAuthOverlay" class="hidden py-16 max-w-md mx-auto text-center animate-fade-in">
+            <div class="glass-card p-8 rounded-3xl border border-sky-500/30 space-y-4">
+                <div id="pinAuthIcon" class="w-16 h-16 mx-auto rounded-2xl bg-sky-500/20 text-sky-400 flex items-center justify-center text-2xl">
+                    <i class="fa-solid fa-user-lock"></i>
+                </div>
+                <div>
+                    <h3 id="pinAuthTitle" class="text-xl font-bold text-white">የወላጅ ደህንነት ማለፊያ</h3>
+                    <p id="pinAuthSubtitle" class="text-xs text-slate-400 mt-1">እባክዎን የደህንነት ማለፊያ ፒን ቁጥር ያስገቡ</p>
+                </div>
+
+                <div class="space-y-3 pt-2">
+                    <input type="password" id="securityPinInput" maxlength="4" placeholder="••••" class="w-full text-center text-2xl tracking-[12px] font-mono py-3 rounded-2xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-sky-500">
+                    <button onclick="verifySecurityPin()" class="w-full py-3 rounded-2xl bg-gradient-to-r from-sky-500 to-blue-600 text-white font-bold text-xs shadow-lg transition-all hover:scale-[1.01]">
+                        ማለፊያውን አረጋግጥ (Login)
+                    </button>
+                    <button onclick="switchPortal('hub')" class="text-xs text-slate-500 hover:text-slate-300 pt-2 block mx-auto">
+                        ወደ መነሻ ተመለስ
+                    </button>
+                </div>
+                <p id="pinAuthHint" class="text-[10px] text-slate-500 pt-2">(የሙከራ ፒን ቁጥር፦ 1234)</p>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- 1. PARENT APP PORTAL SECTION              -->
+        <!-- ========================================== -->
+        <div id="parentAppSection" class="hidden animate-fade-in space-y-6">
+            
+            <!-- Student Header Badge -->
+            <div class="glass-card p-4 rounded-2xl flex flex-wrap items-center justify-between gap-4 border-l-4 border-l-sky-500">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-sky-400 to-blue-600 flex items-center justify-center text-white font-black text-xl shadow-md">
+                        አ
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h2 class="font-bold text-white text-base">አቤል አበበ</h2>
+                            <span class="bg-sky-500/20 text-sky-400 text-[10px] font-extrabold px-2 py-0.5 rounded-md border border-sky-500/30">KG-2 ተማሪ</span>
+                        </div>
+                        <p class="text-xs text-slate-400">ታለንት አካዳሚ (Talent Academy) • አውቶቡስ #04</p>
+                    </div>
+                </div>
+
+                <!-- Live Status Indicator -->
+                <div id="parentLiveBadge" class="flex items-center gap-2 bg-slate-900/90 px-4 py-2 rounded-xl border border-slate-800">
+                    <span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping"></span>
+                    <div>
+                        <p class="text-[10px] text-slate-400 uppercase tracking-wider font-bold">የጉዞ ሁኔታ</p>
+                        <p id="parentTripStatusText" class="text-xs font-extrabold text-amber-400">አውቶቡሱ መንገድ ላይ ነው</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Parent App Navigation Tabs -->
+            <div class="flex items-center gap-2 overflow-x-auto pb-2 border-b border-slate-800">
+                <button onclick="switchParentTab('tracking')" id="ptab-tracking" class="parent-tab-btn active px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 bg-sky-500 text-white transition-all whitespace-nowrap">
+                    <i class="fa-solid fa-map-location-dot"></i>
+                    <span>የቀጥታ መከተያ (Tracking)</span>
+                </button>
+                <button onclick="switchParentTab('payment')" id="ptab-payment" class="parent-tab-btn px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 bg-slate-800/80 text-slate-400 hover:text-white transition-all whitespace-nowrap">
+                    <i class="fa-solid fa-wallet"></i>
+                    <span>የክፍያ መክፈያ (Payments)</span>
+                </button>
+                <button onclick="switchParentTab('driver')" id="ptab-driver" class="parent-tab-btn px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 bg-slate-800/80 text-slate-400 hover:text-white transition-all whitespace-nowrap">
+                    <i class="fa-solid fa-id-card"></i>
+                    <span>የሹፌር መታወቂያ (Driver)</span>
+                </button>
+                <button onclick="switchParentTab('notifs')" id="ptab-notifs" class="parent-tab-btn px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 bg-slate-800/80 text-slate-400 hover:text-white transition-all whitespace-nowrap">
+                    <i class="fa-solid fa-bell"></i>
+                    <span>ማስታወሻዎች</span>
+                </button>
+            </div>
+
+            <!-- TAB 1: LIVE MAP & ROUTE TRACKING -->
+            <div id="pContent-tracking" class="parent-tab-content space-y-6">
+                <!-- Interactive GPS Map Simulation -->
+                <div class="glass-card rounded-3xl p-4 overflow-hidden relative border border-slate-800">
+                    <div class="flex justify-between items-center mb-3">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                            <h3 class="text-sm font-bold text-white">ቀጥታ የጂፒኤስ የካርታ አቅጣጫ (Interactive GPS Route)</h3>
+                        </div>
+                        <span id="speedIndicator" class="text-[11px] font-mono text-sky-400 bg-sky-500/10 px-2.5 py-1 rounded-lg border border-sky-500/20">ፍጥነት: 28 km/h</span>
+                    </div>
+
+                    <!-- SVG Simulated Map -->
+                    <div class="relative w-full h-72 bg-slate-950 rounded-2xl overflow-hidden border border-slate-800 flex items-center justify-center">
+                        <svg class="w-full h-full" viewBox="0 0 600 300" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Map Grid Lines -->
+                            <defs>
+                                <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
+                                    <path d="M 30 0 L 0 0 0 30" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+                                </pattern>
+                            </defs>
+                            <rect width="100%" height="100%" fill="url(#grid)" />
+
+                            <!-- Roads / Route Curves -->
+                            <path id="busRoutePath" d="M 50,220 C 180,220 200,80 350,80 C 480,80 520,200 550,220" fill="none" stroke="#1e293b" stroke-width="12" stroke-linecap="round"/>
+                            <path d="M 50,220 C 180,220 200,80 350,80 C 480,80 520,200 550,220" fill="none" stroke="#0ea5e9" stroke-width="4" class="route-dash" stroke-linecap="round"/>
+
+                            <!-- Pickup Point (Home) -->
+                            <g transform="translate(50, 220)">
+                                <circle r="12" fill="#0284c7" fill-opacity="0.2"/>
+                                <circle r="6" fill="#0ea5e9"/>
+                                <text x="-20" y="25" fill="#94a3b8" font-size="10" font-weight="bold">የተማሪ ቤት (ቤት #402)</text>
+                            </g>
+
+                            <!-- Destination (Talent Academy) -->
+                            <g transform="translate(550, 220)">
+                                <circle r="16" fill="#10b981" fill-opacity="0.2"/>
+                                <circle r="8" fill="#10b981"/>
+                                <text x="-35" y="28" fill="#10b981" font-size="11" font-weight="bold">ታለንት አካዳሚ (ትምህርት ቤት)</text>
+                            </g>
+
+                            <!-- Moving School Bus Icon -->
+                            <g id="animatedBusMarker" transform="translate(50, 220)">
+                                <circle r="14" fill="#f59e0b" fill-opacity="0.4" class="animate-ping"/>
+                                <circle r="12" fill="#f59e0b" stroke="#ffffff" stroke-width="2"/>
+                                <text x="-5" y="4" fill="#000" font-size="10"><i class="fa-solid fa-bus"></i></text>
+                            </g>
+                        </svg>
+
+                        <!-- Floating Live Info Badge -->
+                        <div class="absolute bottom-3 left-3 bg-slate-900/90 backdrop-blur-md p-3 rounded-xl border border-slate-800 text-xs space-y-1">
+                            <p class="text-slate-400">የቀረው ርቀት: <span id="distRemaining" class="text-white font-bold">2.4 km</span></p>
+                            <p class="text-slate-400">የሚደርስበት ግምታዊ ሰዓት: <span id="etaText" class="text-emerald-400 font-bold">02:22 ጠዋት</span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Timeline Progress Tracker -->
+                <div class="glass-card p-6 rounded-3xl space-y-4">
+                    <h3 class="text-sm font-bold text-white mb-2">የጉዞ ደረጃዎች (Trip Progress)</h3>
+                    <div class="relative border-r-2 border-slate-800 pr-6 mr-3 space-y-6">
+                        
+                        <!-- Step 1 -->
+                        <div class="relative flex items-start justify-between">
+                            <div>
+                                <h4 class="text-xs font-bold text-emerald-400 flex items-center gap-2">
+                                    <i class="fa-solid fa-circle-check"></i>
+                                    <span>ተማሪው መኪና ውስጥ ገብቷል</span>
+                                </h4>
+                                <p class="text-[11px] text-slate-400 mt-0.5">የተሳፈረበት ቦታ፦ ገርጂ መኖሪያ ቤት #402</p>
+                            </div>
+                            <span class="text-[10px] font-mono text-slate-500">01:45 ጠዋት</span>
+                            <span class="absolute -right-[31px] top-0 w-3 h-3 rounded-full bg-emerald-500 ring-4 ring-slate-900"></span>
+                        </div>
+
+                        <!-- Step 2 -->
+                        <div class="relative flex items-start justify-between">
+                            <div>
+                                <h4 id="stepTransitTitle" class="text-xs font-bold text-amber-400 flex items-center gap-2">
+                                    <i class="fa-solid fa-bus animate-pulse"></i>
+                                    <span>አውቶቡሱ በመንገድ ላይ ነው</span>
+                                </h4>
+                                <p class="text-[11px] text-slate-400 mt-0.5">አሁን ያለበት ቦታ፦ ቦሌ ሚሊኒየም አቅጣጫ</p>
+                            </div>
+                            <span class="text-[10px] font-mono text-slate-500">በእደት ላይ</span>
+                            <span id="stepTransitDot" class="absolute -right-[31px] top-0 w-3 h-3 rounded-full bg-amber-400 ring-4 ring-slate-900 animate-ping"></span>
+                        </div>
+
+                        <!-- Step 3 -->
+                        <div class="relative flex items-start justify-between">
+                            <div>
+                                <h4 id="stepArrivalTitle" class="text-xs font-bold text-slate-500 flex items-center gap-2">
+                                    <i class="fa-solid fa-school"></i>
+                                    <span>ትምህርት ቤት መድረስ</span>
+                                </h4>
+                                <p class="text-[11px] text-slate-500 mt-0.5">ታለንት አካዳሚ ዋና በር</p>
+                            </div>
+                            <span id="stepArrivalTime" class="text-[10px] font-mono text-slate-500">--:--</span>
+                            <span id="stepArrivalDot" class="absolute -right-[31px] top-0 w-3 h-3 rounded-full bg-slate-700 ring-4 ring-slate-900"></span>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: DOMESTIC ETHIOPIAN PAYMENTS GATEWAY -->
+            <div id="pContent-payment" class="parent-tab-content hidden space-y-6">
+                <!-- Payment Summary Card -->
+                <div class="glass-card p-6 rounded-3xl relative overflow-hidden border border-slate-800">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <span class="text-[11px] font-bold text-sky-400 bg-sky-500/10 px-3 py-1 rounded-full border border-sky-500/20">የአሁኑ ወር ክፍያ</span>
+                            <h3 class="text-2xl font-black text-white mt-2">2,500.00 ETB</h3>
+                            <p class="text-xs text-slate-400 mt-1">የጥቅምት ወር የትራንስፖርት አገልግሎት ክፍያ</p>
+                        </div>
+                        <div id="paymentStatusBadge" class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1.5 rounded-xl text-xs font-extrabold flex items-center gap-1.5">
+                            <i class="fa-solid fa-circle-check"></i>
+                            <span>ተከፍሏል (Paid)</span>
+                        </div>
+                    </div>
+
+                    <div class="pt-4 border-t border-slate-800/80 flex flex-wrap justify-between items-center gap-3">
+                        <div class="text-xs">
+                            <span class="text-slate-500">የመጨረሻ ደረሰኝ፦ </span>
+                            <span id="receiptNumberText" class="font-mono font-bold text-slate-300">#PAY-998231</span>
+                        </div>
+                        <button onclick="openPaymentModal()" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white font-bold text-xs shadow-lg shadow-sky-500/20 transition-all flex items-center gap-2">
+                            <i class="fa-solid fa-credit-card"></i>
+                            <span>በኢትዮጵያ ክፍያዎች አዲስ ክፈል</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Domestic Supported Payment Methods Showcase -->
+                <div class="glass-card p-6 rounded-3xl space-y-4">
+                    <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-building-columns text-sky-400"></i>
+                        <span>በአፕሊኬሽኑ የሚደገፉ የሀገር ውስጥ ክፍያ አማራጮች</span>
+                    </h3>
+
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <!-- Telebirr -->
+                        <div class="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 text-center hover:border-sky-500/50 transition-all">
+                            <div class="w-10 h-10 mx-auto rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center text-lg mb-2">
+                                <i class="fa-solid fa-mobile-screen-button"></i>
+                            </div>
+                            <h4 class="text-xs font-bold text-white">telebirr</h4>
+                            <p class="text-[10px] text-slate-500 mt-0.5">ኢትዮ ቴሌኮም</p>
+                        </div>
+
+                        <!-- CBE Birr -->
+                        <div class="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 text-center hover:border-purple-500/50 transition-all">
+                            <div class="w-10 h-10 mx-auto rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center text-lg mb-2">
+                                <i class="fa-solid fa-building-columns"></i>
+                            </div>
+                            <h4 class="text-xs font-bold text-white">CBE Birr</h4>
+                            <p class="text-[10px] text-slate-500 mt-0.5">የኢትዮጵያ ንግድ ባንክ</p>
+                        </div>
+
+                        <!-- AwashBIRR -->
+                        <div class="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 text-center hover:border-indigo-500/50 transition-all">
+                            <div class="w-10 h-10 mx-auto rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-lg mb-2">
+                                <i class="fa-solid fa-wallet"></i>
+                            </div>
+                            <h4 class="text-xs font-bold text-white">AwashBIRR</h4>
+                            <p class="text-[10px] text-slate-500 mt-0.5">አዋሽ ባንክ</p>
+                        </div>
+
+                        <!-- Bank of Abyssinia -->
+                        <div class="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 text-center hover:border-amber-500/50 transition-all">
+                            <div class="w-10 h-10 mx-auto rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-lg mb-2">
+                                <i class="fa-solid fa-landmark"></i>
+                            </div>
+                            <h4 class="text-xs font-bold text-white">Abyssinia</h4>
+                            <p class="text-[10px] text-slate-500 mt-0.5">አቢሲንያ ባንክ</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: DRIVER DIGITAL ID & PROFILE -->
+            <div id="pContent-driver" class="parent-tab-content hidden space-y-6">
+                <!-- Driver ID Card -->
+                <div class="glass-card p-6 rounded-3xl border border-sky-500/30 relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-900 to-sky-950/40">
+                    <div class="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-sky-500 via-indigo-500 to-emerald-500"></div>
+
+                    <div class="flex items-center justify-between mb-6">
+                        <span class="text-[10px] uppercase tracking-widest font-extrabold text-sky-400 bg-sky-500/10 px-3 py-1 rounded-md border border-sky-500/20">
+                            ኦፊሴላዊ የአሽከርካሪ መታወቂያ
+                        </span>
+                        <span class="text-xs font-mono text-slate-400">ID: #DRV-8842</span>
+                    </div>
+
+                    <div class="flex flex-col md:flex-row items-center gap-6">
+                        <!-- Driver Photo Avatar -->
+                        <div class="w-24 h-24 rounded-2xl bg-gradient-to-tr from-sky-500 to-indigo-600 p-1 shadow-xl">
+                            <div class="w-full h-full bg-slate-900 rounded-xl flex items-center justify-center text-slate-300 text-3xl">
+                                <i class="fa-solid fa-user-tie"></i>
+                            </div>
+                        </div>
+
+                        <div class="flex-1 text-center md:text-right space-y-2">
+                            <h3 class="text-xl font-bold text-white">አበበ ከበደ</h3>
+                            <p class="text-xs text-sky-400 font-semibold">ዋና የትምህርት ቤት አውቶቡስ አሽከርካሪ</p>
+                            
+                            <div class="pt-2 grid grid-cols-2 gap-2 text-xs">
+                                <div class="bg-slate-900/80 p-2 rounded-xl border border-slate-800">
+                                    <span class="text-slate-500 block text-[10px]">የመኪና ዓይነት</span>
+                                    <span class="font-bold text-white">Toyota Hiace</span>
+                                </div>
+                                <div class="bg-slate-900/80 p-2 rounded-xl border border-slate-800">
+                                    <span class="text-slate-500 block text-[10px]">የሰሌዳ ቁጥር</span>
+                                    <span class="font-bold text-amber-400 font-mono">ኮድ 2 - 12345</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 pt-4 border-t border-slate-800 flex flex-wrap gap-3 justify-between items-center">
+                        <div class="flex items-center gap-2 text-xs text-emerald-400">
+                            <i class="fa-solid fa-shield-halved"></i>
+                            <span>የጸደቀና ህጋዊ አሽከርካሪ</span>
+                        </div>
+                        <a href="tel:+251911234567" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg transition-all flex items-center gap-2">
+                            <i class="fa-solid fa-phone"></i>
+                            <span>በቀጥታ ለሹፌሩ ደውል (+251 911 234 567)</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: NOTIFICATIONS -->
+            <div id="pContent-notifs" class="parent-tab-content hidden space-y-4">
+                <div class="glass-card p-6 rounded-3xl space-y-4">
+                    <h3 class="text-sm font-bold text-white mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-bell text-sky-400"></i>
+                        <span>የዛሬ የጉዞ ማስታወሻዎች</span>
+                    </h3>
+
+                    <div id="parentNotificationList" class="space-y-3">
+                        <!-- Dynamic Notifications generated by system -->
+                        <div class="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-start gap-3">
+                            <div class="w-8 h-8 rounded-xl bg-sky-500/10 text-sky-400 flex items-center justify-center text-xs mt-0.5">
+                                <i class="fa-solid fa-bus"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex justify-between items-center">
+                                    <h4 class="text-xs font-bold text-white">ጉዞ ተጀምሯል</h4>
+                                    <span class="text-[10px] text-slate-500 font-mono">01:30 ጠዋት</span>
+                                </div>
+                                <p class="text-[11px] text-slate-400 mt-1">አሽከርካሪ አበበ ከበደ የተማሪዎችን የጥዋት ጉዞ በሰላም ጀምሯል።</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ========================================== -->
+        <!-- 2. DRIVER APP PORTAL SECTION               -->
+        <!-- ========================================== -->
+        <div id="driverAppSection" class="hidden animate-fade-in space-y-6">
+
+            <!-- Driver Header Panel -->
+            <div class="glass-card p-5 rounded-3xl flex flex-wrap items-center justify-between gap-4 border-l-4 border-l-emerald-500">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-2xl font-bold">
+                        <i class="fa-solid fa-steering-wheel"></i>
+                    </div>
+                    <div>
+                        <h2 class="font-bold text-white text-base">አበበ ከበደ (አሽከርካሪ)</h2>
+                        <p class="text-xs text-slate-400">መኪና፦ Toyota Hiace • <span class="text-amber-400 font-mono">ኮድ 2 - 12345</span></p>
+                    </div>
+                </div>
+
+                <!-- Trip Start / End Master Controller -->
+                <div class="flex items-center gap-3">
+                    <button id="btnStartTrip" onclick="toggleDriverTrip(true)" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs shadow-lg shadow-emerald-600/30 transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-play"></i>
+                        <span>ጉዞ ጀምር (Start Trip)</span>
+                    </button>
+                    <button id="btnEndTrip" onclick="toggleDriverTrip(false)" class="hidden px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-xs shadow-lg shadow-rose-600/30 transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-square"></i>
+                        <span>ጉዞ ጨርስ (End Trip)</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Emergency SOS Panic Button -->
+            <div class="glass-card p-4 rounded-2xl border border-rose-500/30 bg-rose-950/20 flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center text-lg animate-pulse">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xs font-bold text-white">የአደጋና የአስቸኳይ ጊዜ ጥሪ (Emergency SOS)</h3>
+                        <p class="text-[10px] text-slate-400">መኪና ቢበላሽ ወይም ችግር ቢገጥም ለአስተዳዳሪውና ለወላጆች በቅጽበት መልእክት ይልካል</p>
+                    </div>
+                </div>
+                <button onclick="triggerEmergencySOS()" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-xs shadow-md transition-all flex items-center gap-2">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    <span>SOS ጥሪ ላክ</span>
+                </button>
+            </div>
+
+            <!-- Student Manifest / Check-in List -->
+            <div class="glass-card p-6 rounded-3xl space-y-4">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h3 class="text-sm font-bold text-white">የተማሪዎች ዝርዝርና መረከቢያ (Student Pickup Manifest)</h3>
+                        <p class="text-xs text-slate-400">ተማሪዎች መኪና ሲሳፈሩ "መኪና ውስጥ ገብቷል" የሚለውን ይጫኑ</p>
+                    </div>
+                    <span id="onboardCountBadge" class="text-xs font-extrabold bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-xl border border-emerald-500/30">
+                        0 / 3 ተማሪዎች ተሳፍረዋል
+                    </span>
+                </div>
+
+                <!-- Student Cards List -->
+                <div id="studentManifestList" class="space-y-3">
+                    <!-- Dynamic Student Rows Generated via JavaScript -->
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="glass-nav mt-10 py-4 px-4 text-center text-xs text-slate-500 border-t border-slate-800">
+        <p>© 2026 SchoolBus ET - የተማሪዎች ዲጂታል ደህንነት እና ትራንስፖርት ፖርታል</p>
+    </footer>
+
+    <!-- ========================================== -->
+    <!-- PAYMENT MODAL (Domestic Options Integration)-->
+    <!-- ========================================== -->
+    <div id="paymentModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden items-center justify-center p-4">
+        <div class="glass-card w-full max-w-md p-6 rounded-3xl space-y-5 border border-slate-700 animate-scale-up">
+            <div class="flex justify-between items-center pb-3 border-b border-slate-800">
+                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-shield-halved text-sky-400"></i>
+                    <span>የክፍያ አማራጭ ይምረጡ</span>
+                </h3>
+                <button onclick="closePaymentModal()" class="text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <div class="space-y-2">
+                <p class="text-xs text-slate-400">የሚከፈለው መጠን፦ <span class="text-sky-400 font-extrabold text-sm">2,500.00 ETB</span></p>
+            </div>
+
+            <!-- Options Grid -->
+            <div class="space-y-2.5">
+                <!-- Option 1: telebirr -->
+                <div onclick="selectPaymentProvider('telebirr')" id="opt-telebirr" class="pay-provider-opt p-3.5 rounded-2xl bg-slate-900 border border-slate-800 hover:border-sky-500 cursor-pointer flex items-center justify-between transition-all">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center">
+                            <i class="fa-solid fa-mobile-screen"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-bold text-white">telebirr (ቴሌብር)</h4>
+                            <p class="text-[10px] text-slate-500">በቀጥታ በቴሌብር ክፍያ ይፈጽሙ</p>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-circle-check text-sky-400 opacity-0 opt-check"></i>
+                </div>
+
+                <!-- Option 2: CBE Birr -->
+                <div onclick="selectPaymentProvider('cbe')" id="opt-cbe" class="pay-provider-opt p-3.5 rounded-2xl bg-slate-900 border border-slate-800 hover:border-purple-500 cursor-pointer flex items-center justify-between transition-all">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center">
+                            <i class="fa-solid fa-building-columns"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-bold text-white">CBE Birr (የኢትዮጵያ ንግድ ባንክ)</h4>
+                            <p class="text-[10px] text-slate-500">CBE Birr App / USSD</p>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-circle-check text-purple-400 opacity-0 opt-check"></i>
+                </div>
+
+                <!-- Option 3: AwashBIRR -->
+                <div onclick="selectPaymentProvider('awash')" id="opt-awash" class="pay-provider-opt p-3.5 rounded-2xl bg-slate-900 border border-slate-800 hover:border-indigo-500 cursor-pointer flex items-center justify-between transition-all">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center">
+                            <i class="fa-solid fa-wallet"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-bold text-white">AwashBIRR (አዋሽ ባንክ)</h4>
+                            <p class="text-[10px] text-slate-500">በአዋሽ ባንክ አፕሊኬሽን</p>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-circle-check text-indigo-400 opacity-0 opt-check"></i>
+                </div>
+            </div>
+
+            <button id="btnSubmitPayment" onclick="processPaymentSubmit()" disabled class="w-full py-3 rounded-2xl bg-slate-800 text-slate-500 font-bold text-xs transition-all flex items-center justify-center gap-2">
+                <span>ክፍያውን አረጋግጥ</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- JavaScript Logic & Canvas Simulation -->
+    <script>
+        /* Local Storage Database Setup */
+        const DEFAULT_STATE = {
+            isTripActive: false,
+            busProgress: 0, // 0 to 100%
+            paymentDone: true,
+            receiptNo: '#PAY-998231',
+            students: [
+                { id: '1', name: 'አቤል አበበ', grade: 'KG-2', parentPhone: '+251911111222', address: 'ገርጂ መኖሪያ ቤት #402', onboard: true },
+                { id: '2', name: 'ሳራ ዮሐንስ', grade: 'Grade 1', parentPhone: '+251922334455', address: 'ቦሌ ማይስፔስ ህንጻ #B3', onboard: false },
+                { id: '3', name: 'ናታን ኤልያስ', grade: 'Grade 3', parentPhone: '+251933445566', address: 'ገርጂ ኢምፔሪያል አቅጣጫ', onboard: false }
+            ],
+            notifications: [
+                { title: 'ጉዞ ተጀምሯል', time: '01:30 ጠዋት', desc: 'አሽከርካሪ አበበ ከበደ የተማሪዎችን የጥዋት ጉዞ በሰላም ጀምሯል።' }
+            ]
+        };
+
+        // Load State from LocalStorage or initialize
+        let appState = JSON.parse(localStorage.getItem('SCHOOLBUS_ET_DB')) || DEFAULT_STATE;
+
+        function saveState() {
+            localStorage.setItem('SCHOOLBUS_ET_DB', JSON.stringify(appState));
+        }
+
+        /* Ambient Particle Canvas Background */
+        const canvas = document.getElementById('bgCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2 + 0.5;
+                this.speedX = Math.random() * 0.5 - 0.25;
+                this.speedY = Math.random() * 0.5 - 0.25;
+                this.opacity = Math.random() * 0.5 + 0.1;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+            }
+            draw() {
+                ctx.fillStyle = `rgba(14, 165, 233, ${this.opacity})`;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        for (let i = 0; i < 45; i++) {
+            particles.push(new Particle());
+        }
+
+        function animateBg() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animateBg);
+        }
+        animateBg();
+
+        /* Security PIN Authentication Management */
+        let activeTargetPortal = null;
+        let isParentAuthenticated = false;
+        let isDriverAuthenticated = false;
+
+        function requestPortalAccess(portal) {
+            activeTargetPortal = portal;
+
+            if (portal === 'hub') {
+                switchPortal('hub');
+                return;
+            }
+
+            // Check if already authenticated in session
+            if (portal === 'parent' && isParentAuthenticated) {
+                switchPortal('parent');
+                return;
+            }
+            if (portal === 'driver' && isDriverAuthenticated) {
+                switchPortal('driver');
+                return;
+            }
+
+            // Show PIN Authentication Overlay
+            document.getElementById('portalHub').classList.add('hidden');
+            document.getElementById('parentAppSection').classList.add('hidden');
+            document.getElementById('driverAppSection').classList.add('hidden');
+            document.getElementById('pinAuthOverlay').classList.remove('hidden');
+            document.getElementById('securityPinInput').value = '';
+
+            const title = document.getElementById('pinAuthTitle');
+            const sub = document.getElementById('pinAuthSubtitle');
+            const hint = document.getElementById('pinAuthHint');
+            const icon = document.getElementById('pinAuthIcon');
+
+            if (portal === 'parent') {
+                title.innerText = "የወላጅ ደህንነት ማለፊያ";
+                sub.innerText = "እባክዎን የወላጅ ማለፊያ ፒን ቁጥር ያስገቡ";
+                hint.innerText = "(የሙከራ ፒን ቁጥር፦ 1234)";
+                icon.className = "w-16 h-16 mx-auto rounded-2xl bg-sky-500/20 text-sky-400 flex items-center justify-center text-2xl";
+            } else {
+                title.innerText = "የአሽከርካሪ ደህንነት ማለፊያ";
+                sub.innerText = "እባክዎን የአሽከርካሪ ማለፊያ ፒን ቁጥር ያስገቡ";
+                hint.innerText = "(የሙከራ ፒን ቁጥር፦ 5678)";
+                icon.className = "w-16 h-16 mx-auto rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-2xl";
+            }
+        }
+
+        function verifySecurityPin() {
+            const enteredPin = document.getElementById('securityPinInput').value;
+
+            if (activeTargetPortal === 'parent') {
+                if (enteredPin === '1234') {
+                    isParentAuthenticated = true;
+                    switchPortal('parent');
+                } else {
+                    alert('❌ የተሳሳተ የወላጅ ማለፊያ ፒን ቁጥር ነው! (እባክዎን 1234 ይጠቀሙ)');
+                }
+            } else if (activeTargetPortal === 'driver') {
+                if (enteredPin === '5678') {
+                    isDriverAuthenticated = true;
+                    switchPortal('driver');
+                } else {
+                    alert('❌ የተሳሳተ የአሽከርካሪ ማለፊያ ፒን ቁጥር ነው! (እባክዎን 5678 ይጠቀሙ)');
+                }
+            }
+        }
+
+        /* Switch View Portals (Hub, Parent, Driver) */
+        function switchPortal(portal) {
+            document.getElementById('portalHub').classList.add('hidden');
+            document.getElementById('pinAuthOverlay').classList.add('hidden');
+            document.getElementById('parentAppSection').classList.add('hidden');
+            document.getElementById('driverAppSection').classList.add('hidden');
+
+            document.getElementById('btnParentPortal').classList.remove('bg-sky-500/20', 'text-sky-400');
+            document.getElementById('btnDriverPortal').classList.remove('bg-emerald-500/20', 'text-emerald-400');
+
+            if (portal === 'parent') {
+                document.getElementById('parentAppSection').classList.remove('hidden');
+                document.getElementById('btnParentPortal').classList.add('bg-sky-500/20', 'text-sky-400');
+            } else if (portal === 'driver') {
+                document.getElementById('driverAppSection').classList.remove('hidden');
+                document.getElementById('btnDriverPortal').classList.add('bg-emerald-500/20', 'text-emerald-400');
+            } else {
+                document.getElementById('portalHub').classList.remove('hidden');
+            }
+        }
+
+        /* Parent Tab Switcher */
+        function switchParentTab(tabName) {
+            document.querySelectorAll('.parent-tab-btn').forEach(btn => {
+                btn.classList.remove('bg-sky-500', 'text-white');
+                btn.classList.add('bg-slate-800/80', 'text-slate-400');
+            });
+            document.querySelectorAll('.parent-tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+
+            document.getElementById(`ptab-${tabName}`).classList.add('bg-sky-500', 'text-white');
+            document.getElementById(`ptab-${tabName}`).classList.remove('bg-slate-800/80', 'text-slate-400');
+            document.getElementById(`pContent-${tabName}`).classList.remove('hidden');
+        }
+
+        /* Render Driver Student Manifest */
+        function renderDriverManifest() {
+            const container = document.getElementById('studentManifestList');
+            container.innerHTML = '';
+
+            let onboardedCount = 0;
+
+            appState.students.forEach(std => {
+                if (std.onboard) onboardedCount++;
+
+                const card = document.createElement('div');
+                card.className = `p-4 rounded-2xl border transition-all flex flex-wrap items-center justify-between gap-4 ${std.onboard ? 'bg-slate-900/90 border-emerald-500/40' : 'bg-slate-900/50 border-slate-800'}`;
+
+                card.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl ${std.onboard ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-800 text-slate-500'} flex items-center justify-center font-bold text-sm">
+                            <i class="fa-solid ${std.onboard ? 'fa-user-check' : 'fa-user'}"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-bold text-white">${std.name} (${std.grade})</h4>
+                            <p class="text-[11px] text-slate-400"><i class="fa-solid fa-location-dot text-rose-400"></i> ${std.address}</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <a href="tel:${std.parentPhone}" class="p-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 text-xs flex items-center gap-1.5">
+                            <i class="fa-solid fa-phone text-sky-400"></i>
+                            <span>ለወላጅ ደውል</span>
+                        </a>
+
+                        <button onclick="toggleStudentOnboard('${std.id}')" class="px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${std.onboard ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-slate-800 text-slate-400 hover:text-white'}">
+                            ${std.onboard ? 'ተሳፍሯል (Onboarded)' : 'መኪና ውስጥ ጫን'}
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            document.getElementById('onboardCountBadge').innerText = `${onboardedCount} / ${appState.students.length} ተማሪዎች ተሳፍረዋል`;
+        }
+
+        function toggleStudentOnboard(id) {
+            const student = appState.students.find(s => s.id === id);
+            if (student) {
+                student.onboard = !student.onboard;
+                saveState();
+                renderDriverManifest();
+            }
+        }
+
+        /* Toggle Driver Trip (Start/End) */
+        function toggleDriverTrip(active) {
+            appState.isTripActive = active;
+            if (!active) {
+                appState.busProgress = 100;
+            } else {
+                appState.busProgress = 10;
+            }
+            
+            // Add notification
+            const timeNow = new Date().toLocaleTimeString('am-ET', { hour: '2-digit', minute: '2-digit' });
+            appState.notifications.unshift({
+                title: active ? 'ጉዞ ተጀምሯል' : 'ጉዞ ተጠናቋል (ትምህርት ቤት ደርሷል)',
+                time: timeNow,
+                desc: active ? 'አሽከርካሪው የቀጥታ ጉዞ ጀምሯል።' : 'አውቶቡሱ ተማሪዎችን ትምህርት ቤት አድርሷል።'
+            });
+
+            saveState();
+            updateUIFromState();
+        }
+
+        /* Emergency SOS Trigger */
+        function triggerEmergencySOS() {
+            alert('⚠️ የአስቸኳይ ጊዜ ጥሪ (SOS Alert) ለአስተዳዳሪውና ለወላጆች በቅጽበት ተልኳል!');
+        }
+
+        /* Payment Modal Controls */
+        let selectedProvider = null;
+
+        function openPaymentModal() {
+            document.getElementById('paymentModal').classList.remove('hidden');
+            document.getElementById('paymentModal').classList.add('flex');
+        }
+
+        function closePaymentModal() {
+            document.getElementById('paymentModal').classList.add('hidden');
+            document.getElementById('paymentModal').classList.remove('flex');
+        }
+
+        function selectPaymentProvider(prov) {
+            selectedProvider = prov;
+            document.querySelectorAll('.pay-provider-opt').forEach(opt => {
+                opt.classList.remove('border-sky-500', 'bg-slate-800');
+            });
+            document.querySelectorAll('.opt-check').forEach(chk => chk.classList.add('opacity-0'));
+
+            const target = document.getElementById(`opt-${prov}`);
+            target.classList.add('border-sky-500', 'bg-slate-800');
+            target.querySelector('.opt-check').classList.remove('opacity-0');
+
+            const btn = document.getElementById('btnSubmitPayment');
+            btn.disabled = false;
+            btn.classList.remove('bg-slate-800', 'text-slate-500');
+            btn.classList.add('bg-sky-500', 'text-white', 'hover:bg-sky-600');
+        }
+
+        function processPaymentSubmit() {
+            if (!selectedProvider) return;
+            
+            appState.paymentDone = true;
+            appState.receiptNo = '#PAY-' + Math.floor(100000 + Math.random() * 900000);
+            saveState();
+            
+            closePaymentModal();
+            updateUIFromState();
+            alert(`🎉 ክፍያዎ በ ${selectedProvider.toUpperCase()} በስኬት ተጠናቋል! ደረሰኝ ቁጥር፦ ${appState.receiptNo}`);
+        }
+
+        /* Dynamic UI Update Sync */
+        function updateUIFromState() {
+            // Driver Buttons
+            if (appState.isTripActive) {
+                document.getElementById('btnStartTrip').classList.add('hidden');
+                document.getElementById('btnEndTrip').classList.remove('hidden');
+                document.getElementById('parentTripStatusText').innerText = 'አውቶቡሱ መንገድ ላይ ነው';
+                document.getElementById('parentTripStatusText').className = 'text-xs font-extrabold text-amber-400';
+            } else {
+                document.getElementById('btnStartTrip').classList.remove('hidden');
+                document.getElementById('btnEndTrip').classList.add('hidden');
+                document.getElementById('parentTripStatusText').innerText = 'ትምህርት ቤት ደርሷል';
+                document.getElementById('parentTripStatusText').className = 'text-xs font-extrabold text-emerald-400';
+            }
+
+            // Notifications Render
+            const notifContainer = document.getElementById('parentNotificationList');
+            notifContainer.innerHTML = '';
+            appState.notifications.forEach(n => {
+                const item = document.createElement('div');
+                item.className = 'p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-start gap-3';
+                item.innerHTML = `
+                    <div class="w-8 h-8 rounded-xl bg-sky-500/10 text-sky-400 flex items-center justify-center text-xs mt-0.5">
+                        <i class="fa-solid fa-bell"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex justify-between items-center">
+                            <h4 class="text-xs font-bold text-white">${n.title}</h4>
+                            <span class="text-[10px] text-slate-500 font-mono">${n.time}</span>
+                        </div>
+                        <p class="text-[11px] text-slate-400 mt-1">${n.desc}</p>
+                    </div>
+                `;
+                notifContainer.appendChild(item);
+            });
+
+            // Payment Receipt Number
+            document.getElementById('receiptNumberText').innerText = appState.receiptNo;
+
+            renderDriverManifest();
+        }
+
+        // Initialize on Load
+        window.onload = function() {
+            updateUIFromState();
+        };
+    </script>
+</body>
+</html>
