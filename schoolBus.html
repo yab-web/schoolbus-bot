@@ -13,6 +13,10 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Ethiopic:wght@300;400;600;700;800&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     
+    <!-- Leaflet Interactive Maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
     <script>
         tailwind.config = {
             theme: {
@@ -91,16 +95,12 @@
             pointer-events: none;
         }
 
-        /* Route Line Animation */
-        .route-dash {
-            stroke-dasharray: 8;
-            animation: dash 20s linear infinite;
-        }
-
-        @keyframes dash {
-            to {
-                stroke-dashoffset: -1000;
-            }
+        /* Real Interactive Leaflet Map Container */
+        #parent-real-map {
+            height: 320px;
+            width: 100%;
+            border-radius: 1rem;
+            z-index: 1;
         }
 
         /* Scrollbar Style */
@@ -284,58 +284,24 @@
 
             <!-- TAB 1: LIVE MAP & ROUTE TRACKING -->
             <div id="pContent-tracking" class="parent-tab-content space-y-6">
-                <!-- Interactive GPS Map Simulation -->
-                <div class="glass-card rounded-3xl p-4 overflow-hidden relative border border-slate-800">
-                    <div class="flex justify-between items-center mb-3">
+                <!-- Real Leaflet GPS Map Container -->
+                <div class="glass-card rounded-3xl p-4 overflow-hidden relative border border-slate-800 space-y-3">
+                    <div class="flex justify-between items-center">
                         <div class="flex items-center gap-2">
-                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                            <h3 class="text-sm font-bold text-white">ቀጥታ የጂፒኤስ የካርታ አቅጣጫ (Interactive GPS Route)</h3>
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                            <h3 class="text-sm font-bold text-white">የቀጥታ አውቶቡስ የጂፒኤስ ካርታ እይታ (Interactive GPS Map)</h3>
                         </div>
-                        <span id="speedIndicator" class="text-[11px] font-mono text-sky-400 bg-sky-500/10 px-2.5 py-1 rounded-lg border border-sky-500/20">ፍጥነት: 28 km/h</span>
+                        <button onclick="initParentMap()" class="text-xs font-mono text-sky-400 bg-sky-500/10 px-2.5 py-1 rounded-lg border border-sky-500/20 flex items-center gap-1.5">
+                            <i class="fa-solid fa-location-crosshairs"></i> ቦታ አድስ
+                        </button>
                     </div>
 
-                    <!-- SVG Simulated Map -->
-                    <div class="relative w-full h-72 bg-slate-950 rounded-2xl overflow-hidden border border-slate-800 flex items-center justify-center">
-                        <svg class="w-full h-full" viewBox="0 0 600 300" xmlns="http://www.w3.org/2000/svg">
-                            <!-- Map Grid Lines -->
-                            <defs>
-                                <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
-                                    <path d="M 30 0 L 0 0 0 30" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
-                                </pattern>
-                            </defs>
-                            <rect width="100%" height="100%" fill="url(#grid)" />
+                    <!-- Leaflet Interactive Map Canvas -->
+                    <div id="parent-real-map"></div>
 
-                            <!-- Roads / Route Curves -->
-                            <path id="busRoutePath" d="M 50,220 C 180,220 200,80 350,80 C 480,80 520,200 550,220" fill="none" stroke="#1e293b" stroke-width="12" stroke-linecap="round"/>
-                            <path d="M 50,220 C 180,220 200,80 350,80 C 480,80 520,200 550,220" fill="none" stroke="#0ea5e9" stroke-width="4" class="route-dash" stroke-linecap="round"/>
-
-                            <!-- Pickup Point (Home) -->
-                            <g transform="translate(50, 220)">
-                                <circle r="12" fill="#0284c7" fill-opacity="0.2"/>
-                                <circle r="6" fill="#0ea5e9"/>
-                                <text x="-20" y="25" fill="#94a3b8" font-size="10" font-weight="bold">የተማሪ ቤት (ቤት #402)</text>
-                            </g>
-
-                            <!-- Destination (Talent Academy) -->
-                            <g transform="translate(550, 220)">
-                                <circle r="16" fill="#10b981" fill-opacity="0.2"/>
-                                <circle r="8" fill="#10b981"/>
-                                <text x="-35" y="28" fill="#10b981" font-size="11" font-weight="bold">ታለንት አካዳሚ (ትምህርት ቤት)</text>
-                            </g>
-
-                            <!-- Moving School Bus Icon -->
-                            <g id="animatedBusMarker" transform="translate(50, 220)">
-                                <circle r="14" fill="#f59e0b" fill-opacity="0.4" class="animate-ping"/>
-                                <circle r="12" fill="#f59e0b" stroke="#ffffff" stroke-width="2"/>
-                                <text x="-5" y="4" fill="#000" font-size="10"><i class="fa-solid fa-bus"></i></text>
-                            </g>
-                        </svg>
-
-                        <!-- Floating Live Info Badge -->
-                        <div class="absolute bottom-3 left-3 bg-slate-900/90 backdrop-blur-md p-3 rounded-xl border border-slate-800 text-xs space-y-1">
-                            <p class="text-slate-400">የቀረው ርቀት: <span id="distRemaining" class="text-white font-bold">2.4 km</span></p>
-                            <p class="text-slate-400">የሚደርስበት ግምታዊ ሰዓት: <span id="etaText" class="text-emerald-400 font-bold">02:22 ጠዋት</span></p>
-                        </div>
+                    <div class="bg-slate-900/90 p-3 rounded-xl border border-slate-800 text-xs flex justify-between items-center flex-wrap gap-2">
+                        <p class="text-slate-400">አሁን ያለበት አሁናዊ ቦታ፦ <span id="mapRealLocStatus" class="text-emerald-400 font-bold">ጂፒኤስ በመፈለግ ላይ...</span></p>
+                        <p class="text-slate-400">የሚደርስበት ግምታዊ ሰዓት: <span id="etaText" class="text-emerald-400 font-bold">10-15 ደቂቃ</span></p>
                     </div>
                 </div>
 
@@ -690,7 +656,7 @@
         /* Local Storage Database Setup */
         const DEFAULT_STATE = {
             isTripActive: false,
-            busProgress: 0, // 0 to 100%
+            busProgress: 0,
             paymentDone: true,
             receiptNo: '#PAY-998231',
             students: [
@@ -840,6 +806,7 @@
             if (portal === 'parent') {
                 document.getElementById('parentAppSection').classList.remove('hidden');
                 document.getElementById('btnParentPortal').classList.add('bg-sky-500/20', 'text-sky-400');
+                setTimeout(initParentMap, 200);
             } else if (portal === 'driver') {
                 document.getElementById('driverAppSection').classList.remove('hidden');
                 document.getElementById('btnDriverPortal').classList.add('bg-emerald-500/20', 'text-emerald-400');
@@ -861,6 +828,78 @@
             document.getElementById(`ptab-${tabName}`).classList.add('bg-sky-500', 'text-white');
             document.getElementById(`ptab-${tabName}`).classList.remove('bg-slate-800/80', 'text-slate-400');
             document.getElementById(`pContent-${tabName}`).classList.remove('hidden');
+
+            if (tabName === 'tracking') {
+                setTimeout(() => {
+                    if (parentMap !== null) {
+                        parentMap.invalidateSize();
+                    }
+                }, 200);
+                initParentMap();
+            }
+        }
+
+        /* ======================================================== */
+        /* REAL DEVICE GEOLOCATION MAP ENGINE INTEGRATION           */
+        /* ======================================================== */
+        let parentMap = null;
+        let busMarker = null;
+
+        function initParentMap() {
+            if (parentMap !== null) { 
+                parentMap.invalidateSize(); 
+                fetchRealDeviceLocation();
+                return; 
+            }
+
+            // Initialize Map on Addis Ababa area as default fallback
+            parentMap = L.map('parent-real-map').setView([9.0107, 38.7612], 15);
+            
+            // Reliable ESRI World Street Map (403 Access Blocked Error-Free)
+            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+                maxZoom: 19,
+                attribution: 'Tiles &copy; Esri'
+            }).addTo(parentMap);
+
+            const busIcon = L.icon({
+                iconUrl: 'https://cdn-icons-png.flaticon.com/512/3448/3448339.png',
+                iconSize: [40, 40]
+            });
+
+            busMarker = L.marker([9.0107, 38.7612], {icon: busIcon})
+                .addTo(parentMap)
+                .bindPopup("<b>አውቶቡስ #04 (አበበ ከበደ)</b><br>እውነተኛ የቀጥታ ቦታ")
+                .openPopup();
+
+            // Fetch Real Device Location directly
+            fetchRealDeviceLocation();
+        }
+
+        function fetchRealDeviceLocation() {
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const realLat = position.coords.latitude;
+                        const realLng = position.coords.longitude;
+
+                        if (busMarker && parentMap) {
+                            busMarker.setLatLng([realLat, realLng]);
+                            parentMap.setView([realLat, realLng], 16);
+                        }
+                        const statusText = document.getElementById('mapRealLocStatus');
+                        if (statusText) {
+                            statusText.innerText = `እውነተኛ ቦታዎ ተገኝቷል (${realLat.toFixed(4)}, ${realLng.toFixed(4)})`;
+                        }
+                    },
+                    (error) => {
+                        const statusText = document.getElementById('mapRealLocStatus');
+                        if (statusText) {
+                            statusText.innerText = "⚠️ እባክዎን የቦታ ፈቃድ (Location Access) ይፍቀዱ!";
+                        }
+                    },
+                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                );
+            }
         }
 
         /* Render Driver Student Manifest */
@@ -998,27 +1037,30 @@
 
             // Notifications Render
             const notifContainer = document.getElementById('parentNotificationList');
-            notifContainer.innerHTML = '';
-            appState.notifications.forEach(n => {
-                const item = document.createElement('div');
-                item.className = 'p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-start gap-3';
-                item.innerHTML = `
-                    <div class="w-8 h-8 rounded-xl bg-sky-500/10 text-sky-400 flex items-center justify-center text-xs mt-0.5">
-                        <i class="fa-solid fa-bell"></i>
-                    </div>
-                    <div class="flex-1">
-                        <div class="flex justify-between items-center">
-                            <h4 class="text-xs font-bold text-white">${n.title}</h4>
-                            <span class="text-[10px] text-slate-500 font-mono">${n.time}</span>
+            if (notifContainer) {
+                notifContainer.innerHTML = '';
+                appState.notifications.forEach(n => {
+                    const item = document.createElement('div');
+                    item.className = 'p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-start gap-3';
+                    item.innerHTML = `
+                        <div class="w-8 h-8 rounded-xl bg-sky-500/10 text-sky-400 flex items-center justify-center text-xs mt-0.5">
+                            <i class="fa-solid fa-bell"></i>
                         </div>
-                        <p class="text-[11px] text-slate-400 mt-1">${n.desc}</p>
-                    </div>
-                `;
-                notifContainer.appendChild(item);
-            });
+                        <div class="flex-1">
+                            <div class="flex justify-between items-center">
+                                <h4 class="text-xs font-bold text-white">${n.title}</h4>
+                                <span class="text-[10px] text-slate-500 font-mono">${n.time}</span>
+                            </div>
+                            <p class="text-[11px] text-slate-400 mt-1">${n.desc}</p>
+                        </div>
+                    `;
+                    notifContainer.appendChild(item);
+                });
+            }
 
             // Payment Receipt Number
-            document.getElementById('receiptNumberText').innerText = appState.receiptNo;
+            const receiptEl = document.getElementById('receiptNumberText');
+            if (receiptEl) receiptEl.innerText = appState.receiptNo;
 
             renderDriverManifest();
         }
